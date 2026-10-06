@@ -1,17 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="content-type" />
     <meta content="IE=edge" http-equiv="X-UA-Compatible" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LogicSim</title>
     <link rel="stylesheet" type="text/css" href="lib/joint.css" />
     <link href="lib/select2.min.css" rel="stylesheet" />
-    <link href="lib/w3.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ink: {
+                            950: "#070b14",
+                            900: "#0c1220",
+                            800: "#121a2b"
+                        }
+                    },
+                    boxShadow: {
+                        inset: "inset 0 2px 8px rgba(2, 6, 23, 0.55)"
+                    }
+                }
+            }
+        };
+    </script>
     <link rel="stylesheet" type="text/css" href="style.css" />
 
-
-    <!-- dependencies -->
     <script src="lib/jquery.min.js"></script>
     <script src="lib/lodash.min.js"></script>
     <script src="lib/backbone.js"></script>
@@ -22,135 +39,131 @@
     <script src="LogicParser.js"></script>
 </head>
 
-<body>
-    <!-- content -->
+<body class="bg-ink-950 text-slate-200 antialiased">
     <div class="joint-app">
-        <div class="app-header">
-            <div class="mini-map">
+        <aside class="control-panel">
+            <div class="px-4 pt-4 pb-3 border-b border-slate-800/80">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-cyan-400/80">LogicSim</p>
+                <h1 class="mt-1 text-xl font-semibold text-white">逻辑图生成器</h1>
+                <p class="mt-1 text-xs text-slate-400">逆波兰表达式 → JSON → JointJS 画布</p>
+            </div>
+
+            <div class="mini-map mx-4 mt-4 overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950">
                 <div id="mini-paper"></div>
                 <div id="mini-view">
                     <div id="mini-resize"></div>
                 </div>
             </div>
-            <div class="title-container">
-                <div style="width:33%;float:left;overflow:auto;">
-                    <div class="w3-row" style="margin:1px">
-                        <div class="w3-third w3-btn w3-light-green  w3-hover-green"
-                            style="position: relative;overflow: hidden;cursor:pointer">
-                            <img src="assets/icons/save2.svg" width="15" height="15" class="w3-margin-right" />
-                            <span>载入文本</span>
-                            <input type="file" style="position: absolute;
-                            top: 0;
-                            right: 0;
-                            margin: 0;
-                            padding: 0;
-                            font-size: 20px;
-                            cursor: pointer;
-                            opacity: 0;
-                            filter: alpha(opacity=0)" id="fileToLoad" />
-                        </div>
-                        <button class="w3-third w3-btn w3-light-blue  w3-hover-blue" onclick="app.saveTextAsFile()"><img
-                                src="assets/icons/upload.svg" width="15" height="15"
-                                class="w3-margin-right" />保存文本</button>
-                        <input class="w3-third w3-input w3-center" id="inputFileNameToSaveAs" value="默认保存名称"></input>
+
+            <div class="control-scroll px-4 py-4 space-y-5">
+                <section class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-medium uppercase tracking-wider text-slate-400" for="ReversePol">逆波兰表达式</label>
+                        <span class="text-[10px] text-slate-500">支持 . , &lt; = &gt;</span>
                     </div>
-
-
-                    <textarea style="width:100%;height:60px" id="ReversePol"></textarea>
-
-                    <button class="w3-block w3-btn w3-yellow  w3-hover-deep-orange w3-round-large"
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button"
+                            class="rounded-xl border border-cyan-400/30 bg-slate-900 px-3 py-2 text-sm text-cyan-200 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-500/10 hover:shadow-lg hover:shadow-cyan-500/20"
+                            onclick="insertQuantifier('∀')">插入全称量词 (∀)</button>
+                        <button type="button"
+                            class="rounded-xl border border-blue-400/30 bg-slate-900 px-3 py-2 text-sm text-blue-200 transition duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-500/10 hover:shadow-lg hover:shadow-blue-500/20"
+                            onclick="insertQuantifier('∃')">插入存在量词 (∃)</button>
+                    </div>
+                    <textarea id="ReversePol" spellcheck="false"
+                        class="h-24 w-full resize-y rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 font-mono text-sm text-slate-100 shadow-inset outline-none ring-0 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/30"
+                        placeholder="例如：a b . fe >"></textarea>
+                    <button type="button"
+                        class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-900/40 transition duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-500/40"
                         onclick="app.parseLogic()">解析文本</button>
+                </section>
 
-                </div>
-                <div style="width:65%;float:left">
-                    <table style="width:100%">
-                        <tr>
-                            <td colspan="2">
-                                <textarea id="myModel" style="width:100%;height:100px">
-                            {
-                                nodeArray: [],
-                                linkArray: []
-                            }
-                        </textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <button id="LoadButton" class="w3-block w3-btn w3-light-green w3-hover-green"
-                                    onclick="app.load()"><img src="assets/icons/save2.svg" width="15" height="15"
-                                        class="w3-margin-right" />文本转图</button>
-                            </td>
-                            <td>
-                                <button id="SaveButton" class="w3-block w3-btn w3-light-blue  w3-hover-blue"
-                                    onclick="app.save()"><img src="assets/icons/upload.svg" width="15" height="15"
-                                        class="w3-margin-right" />图转文本</button>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                <section class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <label
+                            class="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-100 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg hover:shadow-slate-900/50">
+                            载入文本
+                            <input type="file" id="fileToLoad" class="absolute inset-0 cursor-pointer opacity-0" />
+                        </label>
+                        <button type="button"
+                            class="rounded-xl bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-100 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg hover:shadow-slate-900/50"
+                            onclick="app.saveTextAsFile()">保存文本</button>
+                    </div>
+                    <input id="inputFileNameToSaveAs" value="默认保存名称"
+                        class="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 shadow-inset outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/30" />
+                </section>
+
+                <section class="space-y-3">
+                    <label class="text-xs font-medium uppercase tracking-wider text-slate-400" for="myModel">图形 JSON</label>
+                    <textarea id="myModel" spellcheck="false"
+                        class="h-32 w-full resize-y rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 font-mono text-xs text-slate-200 shadow-inset outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/30">{"nodeArray":[],"linkArray":[]}</textarea>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="LoadButton" type="button"
+                            class="rounded-xl bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/30"
+                            onclick="app.load()">文本转图</button>
+                        <button id="SaveButton" type="button"
+                            class="rounded-xl bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-100 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg hover:shadow-slate-900/50"
+                            onclick="app.save()">图转文本</button>
+                    </div>
+                </section>
+
+                <section class="space-y-3 rounded-xl border border-slate-800 bg-ink-800/60 p-3">
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">选中元素</p>
+                    <label class="block text-xs text-slate-400" for="ERName">元素名称</label>
+                    <input type="text" id="ERName"
+                        class="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 shadow-inset outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30" />
+                    <label class="block text-xs text-slate-400" for="ERMemo">元素备注</label>
+                    <textarea id="ERMemo"
+                        class="h-20 w-full resize-y rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 shadow-inset outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30"></textarea>
+                    <button id="ERSetName" type="button"
+                        class="w-full rounded-xl bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-100 transition duration-200 hover:-translate-y-0.5 hover:bg-slate-700"
+                        onclick="app.ChangeName()">保存修改</button>
+                </section>
+
+                <section class="rounded-xl border border-slate-800 bg-ink-800/40 p-3 text-xs leading-6 text-slate-400">
+                    在文本框内输入逆波兰逻辑表达式，再点「解析文本」，然后点「文本转图」。<br />
+                    操作符：<span class="font-mono text-cyan-300">.</span> 与、
+                    <span class="font-mono text-cyan-300">,</span> 或、
+                    <span class="font-mono text-cyan-300">&lt;</span> 非、
+                    <span class="font-mono text-cyan-300">=</span> 等价、
+                    <span class="font-mono text-cyan-300">&gt;</span> 推出。<br />
+                    示例：<span class="font-mono text-slate-200">a b . fe &gt;</span> 表示「a 与 b 推出了 fe」。
+                </section>
+
+                <p id="status" class="rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs text-slate-400">
+                    Diagram Model loaded from Json Format.
+                </p>
             </div>
-        </div>
+        </aside>
+
+        <div class="app-header"></div>
 
         <div class="app-body">
-            <div class="left-container">
-
-            </div>
+            <div class="left-container"></div>
             <div class="main-container">
                 <div id="paper-container">
-                    <div id="paper" style="cursor:grab">
-                    </div>
+                    <div id="paper" style="cursor:grab"></div>
                 </div>
             </div>
             <div id="app-resize">
-                <div style="position:absolute;left:-35px;background-image:url(assets/box-arrow-in-right.svg);background-size:100%;width:30px;height:30px;"
-                    onclick="
-                app.ResizeBlock()
-                ">
-
-                </div>
+                <div class="resize-toggle" onclick="app.ResizeBlock()"></div>
             </div>
-            <div class="right-container">
-                <div class="w3-row">
-                    <div class="w3-third">
-                        元素名称：
-                    </div>
-                    <input class="w3-twothird" type="text" id="ERName" />
-                </div>
-                <div class="w3-row">
-                    <div class="w3-third">
-                        元素备注：
-                    </div>
-                    <textarea class="w3-twothird" id="ERMemo">
-                    </textarea>
-                </div>
-                <button id="ERSetName" class="w3-block w3-btn w3-yellow  w3-hover-deep-orange w3-round-large"
-                    onclick="app.ChangeName()">保存修改</button>
-                <div>
-                    在“解析文本”按钮上面的文本框内输入“逆波兰逻辑表达式”。<br/>
-                    “逆波兰逻辑表达式”支持五种逻辑操作符：<br/>
-                    {<br/>
-                    “.”：“a b .”代表“a”和“b”的逻辑与，<br/>
-                    “<”：“a <”代表“a”的逻辑非，<br/>
-                    “,”：“a b ,”代表“a”和“b”的逻辑或，<br/>
-                    “=”：“a b =”代表“a”和“b”的逻辑等价/同或<br/>
-                    “>”：“a b >”代表“a”和“b”的逻辑推出，<br/>
-                      }。<br/>
-                    逆波兰逻辑表达式组合的举例说明：<br/>
-                    {<br/>
-                    “a b . fe >”即代表逻辑表达“a 与 b   推出了   fe”，<br/>
-                    “a b . fe ge > =”即代表逻辑表达“a 与 b  等价于  fe 推出了 ge”<br/>
-                    }。<br/>
-                    之后点击“解析文本”按钮，将“逆波兰逻辑表达式”转换为适合图形表示的 JSON 格式，<br/>
-                    之后再点击“解析文本”按钮旁的“文本转图”，得到最终的正规图形表示。
-                </div>
-            </div>
-            <div class="bottom-container">
-                <p id="status">Diagram Model loaded from Json Format.</p>
-            </div>
+            <div class="right-container"></div>
+            <div class="bottom-container"></div>
         </div>
     </div>
-    <script src="ViewGen.js">
+    <script>
+        function insertQuantifier(symbol) {
+            var el = document.getElementById("ReversePol");
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            var value = el.value;
+            el.value = value.slice(0, start) + symbol + value.slice(end);
+            el.focus();
+            var caret = start + symbol.length;
+            el.setSelectionRange(caret, caret);
+        }
     </script>
+    <script src="ViewGen.js"></script>
 </body>
 
 </html>

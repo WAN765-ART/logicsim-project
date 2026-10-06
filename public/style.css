@@ -1,12 +1,6 @@
-@font-face {
-    font-family: 'TsangerYuYangT03';
-    src: url('./lib/TsangerYuYangT-W03.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-
-html, body, .joint-app {
+html,
+body,
+.joint-app {
     position: relative;
     width: 100%;
     height: 100%;
@@ -16,30 +10,58 @@ html, body, .joint-app {
 }
 
 body {
-    -webkit-user-select: none;
-    -moz-user-select: -moz-none;
-    user-select: none;
-    font-family: TsangerYuYangT03, sans-serif, Arial;
     overflow: hidden;
-    display:block;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(56, 189, 248, 0.12), transparent 55%),
+        radial-gradient(900px 500px at -10% 110%, rgba(37, 99, 235, 0.16), transparent 50%),
+        #070b14;
+}
+
+.joint-app {
+    display: flex;
+}
+
+.control-panel {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+    height: 100%;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(18, 26, 43, 0.96), rgba(12, 18, 32, 0.98));
+    border-right: 1px solid rgba(148, 163, 184, 0.16);
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.28);
+}
+
+.control-scroll {
+    flex: 1;
+    overflow: auto;
+}
+
+.control-panel input,
+.control-panel textarea,
+.control-panel button,
+.bottom-container,
+#status {
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 .app-header {
-    position: relative;
-    width: 100%;
-    height: 150px;
-    overflow: hidden;
+    display: none;
 }
 
 .app-body {
     position: relative;
-    height: -moz-calc(100% - 60px);
-    height: -webkit-calc(100% - 60px);
-    height: calc(100% - 60px);
+    flex: 1;
+    height: 100%;
+    min-width: 0;
 }
 
 .mini-map {
-    display: inline-block;
+    position: relative;
     width: 300px;
     height: 150px;
     padding: 0;
@@ -47,92 +69,85 @@ body {
 
 #mini-resize {
     position: absolute;
-right: 0;
-bottom: 0;
-width: 10px;
-height: 10px;
-cursor: nwse-resize;
-margin: 0 -7px -7px 0;
-    border-radius: 50%;
-border: 2px solid #31d0c6;
-background-color: #fff;
-}
-
-/*  Toolbar  */
-.title-container {
-    display: inline-block;
-    position: absolute;
-    height: 100%;
-    left: 300px;
     right: 0;
-    box-sizing: border-box;
-    background-color: #f0f8ff;
-    z-index: 10;
-    overflow: auto;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    cursor: nwse-resize;
+    margin: 0 -7px -7px 0;
+    border-radius: 50%;
+    border: 2px solid #38bdf8;
+    background-color: #fff;
 }
 
 .left-container {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 10px;
-    height: 100%;
-    overflow: auto;
-    background-color: #f0f8ff;
-    z-index: 10;
+    display: none;
 }
-
 
 .main-container {
     position: absolute;
     top: 0;
-    left: 10px;
-    right: 306px;
-    bottom: 150px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     overflow: hidden;
-    border:2px solid #D15DEE;
     box-sizing: border-box;
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    background:
+        linear-gradient(rgba(15, 23, 42, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-color: #0b1324;
 }
 
-#app-resize{
+#paper-container,
+#paper {
     position: absolute;
-    top: 0;
-    width: 6px;
-    right: 300px;
-    bottom: 150px;
-    background-color: #eeeeee;
-    cursor:ew-resize;    
-}
-#app-resize:hover{
-    background-color:#ee5d70;
 }
 
-/*  Inspector  */
+#app-resize {
+    position: absolute;
+    top: 12px;
+    width: 6px;
+    right: 0;
+    bottom: 12px;
+    background-color: rgba(148, 163, 184, 0.18);
+    cursor: ew-resize;
+    border-radius: 999px;
+    z-index: 12;
+}
+
+#app-resize:hover {
+    background-color: #38bdf8;
+}
+
+.resize-toggle {
+    position: absolute;
+    left: -35px;
+    width: 30px;
+    height: 30px;
+    background-image: url(assets/box-arrow-in-right.svg);
+    background-size: 100%;
+    filter: invert(1) brightness(1.4);
+    cursor: pointer;
+}
+
 .right-container {
     position: absolute;
     top: 0;
     right: 0;
-    width: 300px;
-    bottom: 150px; /* navigator height */
-    /*width: 100%;*/
-    border:2px solid #ee5d70;
-    box-sizing: border-box;
-    overflow: auto;
-    background-color: #f0f8ff;
-}
-
-/*  Navigator  */
-.bottom-container {
-    position: absolute;
-    right: 0;
+    width: 0;
     bottom: 0;
-    left:10px;
-    width: 100%;
-    height: 150px;
-    background-color: #f0f8ff;
-    z-index: 10;
+    box-sizing: border-box;
+    overflow: hidden;
+    background-color: rgba(12, 18, 32, 0.92);
+    border-left: 1px solid rgba(148, 163, 184, 0.12);
 }
 
+.bottom-container {
+    display: none;
+}
 
-
-
+.joint-paper {
+    background-color: transparent;
+}
